@@ -76,8 +76,7 @@ async function webSearch(query, maxResults = 6) {
 async function extractClaims(page, maxClaims = 2) {
   const text = (page.title ? page.title + '. ' : '') + (page.text || '');
   const r = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    temperature: 0,
+    model: 'gpt-5-nano',
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: 'Extraia afirmações factuais checáveis, curtas e objetivas.' },
@@ -110,8 +109,7 @@ async function corroborateWithSearch(page, maxClaims = 2, maxResults = 6) {
   }
 
   const judge = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    temperature: 0,
+    model: 'gpt-5-nano',
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: 'Compare afirmações e evidências e classifique cada uma.' },
@@ -168,8 +166,7 @@ app.post('/classify', async (req, res) => {
 
     // A) avaliação base (estilo/linguagem/fontes)
     const base = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      temperature: 0.2,
+      model: 'gpt-4.1-nano',
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system',
@@ -210,7 +207,6 @@ TEXTO (truncado ${text.length}/${(page.text||'').length} chars):
     // C) fusão das visões
     const fused = await openai.chat.completions.create({
       model: 'gpt-5-nano',
-      temperature: 0,
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: 'Combine avaliação base e corroboração em um veredito final.' },
