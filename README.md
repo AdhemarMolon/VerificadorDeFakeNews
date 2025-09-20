@@ -40,4 +40,4 @@ O Fake Checker é uma solução completa para verificação de notícias, compos
 4. Inicie o servidor:
     npm start
 
-após isso use a extensão no Chrome.
+após isso use a extensão no Chrome: ativando a opção de desenvolvedor no chrome://extensions e carrega essa pasta na opção "Load Unpacked"
