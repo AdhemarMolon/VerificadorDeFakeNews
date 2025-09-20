@@ -20,6 +20,24 @@ const message = document.getElementById('message');
 const reasonsUl = document.getElementById('reasons');
 const sourcesDiv = document.getElementById('sources');
 
+// --- lista de domínios confiáveis no front (espelho do backend)
+const TRUSTED_DOMAINS = new Set([
+  'g1.globo.com','aosfatos.org','piaui.folha.uol.com.br','boatos.org','e-farsas.com',
+  'snopes.com','factcheck.org','poligrafo.sapo.pt',
+  'bbc.com','reuters.com','apnews.com','nytimes.com','elpais.com',
+  'agenciabrasil.ebc.com.br','estadao.com.br','folha.uol.com.br','uol.com.br',
+  'nexojornal.com.br','cnnbrasil.com.br','veja.abril.com.br','band.uol.com.br'
+]);
+function isTrusted(url){
+  try{
+    const host = new URL(url).hostname.toLowerCase();
+    if (TRUSTED_DOMAINS.has(host)) return true;
+    // aceita subdomínios (ex.: noticias.uol.com.br)
+    for (const d of TRUSTED_DOMAINS) if (host.endsWith('.'+d)) return true;
+  }catch{}
+  return false;
+}
+
 // --- helpers de UI ---
 function setLoading(v){
   if(v){ btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Analisando...'; }
@@ -49,9 +67,7 @@ function renderBar(label, score){
   scoreText.textContent = `confiança da avaliação: ${pct}%`;
 }
 
-// --- normaliza fontes sugeridas ---
-// Aceita: ["https://…", {url|link|href:"https://…", title?}]
-// Remove: itens sem http(s), duplicados, vazios
+// --- normaliza + filtra fontes ---
 function normalizeSources(suggested) {
   if (!Array.isArray(suggested)) return [];
   const out = [];
@@ -65,6 +81,7 @@ function normalizeSources(suggested) {
       title = (it.title || it.source || it.name || '').toString().trim();
     }
     if (!url || !/^https?:\/\//i.test(url)) continue;
+    if (!isTrusted(url)) continue;                // <<=== filtro de confiança (front)
     if (seen.has(url)) continue;
     seen.add(url);
     let host = '';
@@ -93,13 +110,12 @@ function renderSources(suggested) {
   if (clean.length === 0) {
     const none = document.createElement('div');
     none.className = 'tiny';
-    none.textContent = 'Nenhuma fonte encontrada.';
+    none.textContent = 'Nenhuma fonte confiável foi encontrada.';
     wrap.appendChild(none);
     sourcesDiv.appendChild(wrap);
     return;
   }
 
-  // Cards individuais
   clean.forEach(({title, url, host}) => {
     const card = document.createElement('div');
     card.className = 'source-card';
@@ -148,6 +164,7 @@ function renderUI(data){
 
   labelPill.className = 'pill ' + ui.cls;
   labelPill.textContent = `${ui.icon} ${ui.text}`;
+  renderBar(data.label, calibrated);
 
   message.textContent =
     data.label==='fake'
@@ -156,13 +173,11 @@ function renderUI(data){
       ? 'Este conteúdo está SUSPEITO. Confira fontes independentes abaixo.'
       : 'Este conteúdo parece CONFIÁVEL. Ainda assim, cheque as fontes.';
 
-  // motivos
   reasonsUl.innerHTML = '';
   (data.reasons || []).slice(0,8).forEach(r=>{
     const li = document.createElement('li'); li.textContent = r; reasonsUl.appendChild(li);
   });
 
-  // fontes em cards (com URL completa)
   renderSources(data.suggested_sources);
 }
 
@@ -191,7 +206,6 @@ btn.addEventListener('click', async () => {
   }
 });
 
-// Ao abrir o popup, tenta mostrar o último resultado (se existir)
 (async function loadLast(){
   const resp = await new Promise(resolve => {
     chrome.runtime.sendMessage({ type: 'GET_LAST_RESULT' }, resolve);
