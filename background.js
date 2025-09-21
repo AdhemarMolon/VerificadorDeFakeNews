@@ -3,22 +3,21 @@ const API_URL = "http://localhost:8787/classify"; // ajuste em produção
 const API_KEY = ""; // opcional, ex.: "Bearer SEU_TOKEN"
 // =============================
 
-const TIMEOUT_MS_FULL = 90000;     // página inteira
-const TIMEOUT_MS_VIEW = 60000;     // somente tela
+
+const TIMEOUT_MS_FULL = 90000; // página inteira
+const TIMEOUT_MS_VIEW = 60000; // somente tela
 const MAX_CHARS_FULL = 80000;
 const MAX_CHARS_VIEW = 12000;
 
+
 // ---- utils ----
 function isInjectableUrl(url = "") {
-  if (!url) return false;
-  try {
-    const u = new URL(url);
-    const disallowed = ["chrome:", "edge:", "about:", "chrome-extension:"];
-    if (disallowed.some(p => u.protocol.startsWith(p))) return false;
-    if (u.hostname.endsWith("chrome.google.com")) return false;
-    if (u.pathname.endsWith(".pdf")) return false;
-    return true;
-  } catch { return false; }
+if (!url) return false;
+try {
+const u = new URL(url);
+const disallowed = ["chrome:", "edge:", "about:", "file:"].some(p => u.protocol.startsWith(p));
+return !disallowed;
+} catch { return false; }
 }
 
 async function exec(tabId, fileOrFunc, args = []) {

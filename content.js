@@ -1,17 +1,17 @@
 // Extrai metadados úteis
 function collectMeta() {
-  const $ = (sel) => document.querySelector(sel);
-  const meta = {};
-  const ogTitle = $('meta[property="og:title"]')?.content || "";
-  const ogDesc  = $('meta[property="og:description"]')?.content || "";
-  const desc    = $('meta[name="description"]')?.content || "";
-  const author  = $('meta[name="author"]')?.content || "";
-  const pubTime = $('meta[property="article:published_time"]')?.content || "";
-  meta.title = document.title || ogTitle || "";
-  meta.description = ogDesc || desc || "";
-  meta.author = author || "";
-  meta.published_time = pubTime || "";
-  return meta;
+const $ = (sel) => document.querySelector(sel);
+const meta = {};
+const ogTitle = $('meta[property="og:title"]')?.content || "";
+const ogDesc = $('meta[property="og:description"]')?.content || "";
+const desc = $('meta[name="description"]')?.content || "";
+const author = $('meta[name="author"]')?.content || "";
+const pubTime = $('meta[property="article:published_time"]')?.content || "";
+meta.title = document.title || ogTitle || "";
+meta.description = ogDesc || desc || "";
+meta.author = author;
+meta.published_time = pubTime;
+return meta;
 }
 
 // Junta headings (h1..h3) para dar contexto
